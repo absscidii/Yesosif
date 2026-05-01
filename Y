@@ -1,4 +1,4 @@
--- // Atomic Power Red - Triple Toggle (Draggable) \\
+-- // Atomic Power Red - Triple Toggle (With Player Heal) \\
 
 local player = game.Players.LocalPlayer
 
@@ -8,8 +8,8 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 240, 0, 230)
-frame.Position = UDim2.new(0.5, -120, 0.25, 0)
+frame.Size = UDim2.new(0, 250, 0, 240)
+frame.Position = UDim2.new(0.5, -125, 0.25, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -29,7 +29,7 @@ title.TextScaled = true
 title.Font = Enum.Font.GothamBold
 title.Parent = frame
 
--- Toggle 1: Infinite Beam (Energy 0 + 100 Billion Damage)
+-- Toggle 1: Infinite Beam (100 Billion Damage)
 local toggle1 = Instance.new("TextButton")
 toggle1.Size = UDim2.new(0.9, 0, 0, 38)
 toggle1.Position = UDim2.new(0.05, 0, 0.22, 0)
@@ -42,12 +42,12 @@ toggle1.Parent = frame
 
 local c1 = Instance.new("UICorner") c1.CornerRadius = UDim.new(0, 8) c1.Parent = toggle1
 
--- Toggle 2: Strong Knockback (DMG 2)
+-- Toggle 2: Player Heal (-293992929)
 local toggle2 = Instance.new("TextButton")
 toggle2.Size = UDim2.new(0.9, 0, 0, 38)
 toggle2.Position = UDim2.new(0.05, 0, 0.42, 0)
 toggle2.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-toggle2.Text = "Strong Knockback (DMG 2)"
+toggle2.Text = "Player Heal (-293992929)"
 toggle2.TextColor3 = Color3.new(1,1,1)
 toggle2.TextScaled = true
 toggle2.Font = Enum.Font.GothamSemibold
@@ -55,7 +55,7 @@ toggle2.Parent = frame
 
 local c2 = Instance.new("UICorner") c2.CornerRadius = UDim.new(0, 8) c2.Parent = toggle2
 
--- Toggle 3: Immortal Player (math.huge damage)
+-- Toggle 3: Immortal Player (Godmode)
 local toggle3 = Instance.new("TextButton")
 toggle3.Size = UDim2.new(0.9, 0, 0, 38)
 toggle3.Position = UDim2.new(0.05, 0, 0.62, 0)
@@ -71,6 +71,132 @@ local c3 = Instance.new("UICorner") c3.CornerRadius = UDim.new(0, 8) c3.Parent =
 local status = Instance.new("TextLabel")
 status.Size = UDim2.new(1, 0, 0, 25)
 status.Position = UDim2.new(0, 0, 0.85, 0)
+status.BackgroundTransparency = 1
+status.Text = "All OFF"
+status.TextColor3 = Color3.fromRGB(180, 180, 180)
+status.TextScaled = true
+status.Font = Enum.Font.Gotham
+status.Parent = frame
+
+local infiniteOn = false
+local healOn = false
+local immortalOn = false
+
+local function removeBeam()
+    local args = { "GetToken", "CombatFunction", "RemoveBeam" }
+    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CombatRemote"):FireServer(unpack(args))
+end
+
+-- Infinite Beam (100 Billion Damage)
+local function fireInfiniteBeam()
+    local args = {
+        "GetToken", "CombatFunction", "CreateBeam",
+        {
+            Knockback = { FaceTarget = false, Velocity = 0, YVelocity = 0, Duration = 0.2 },
+            Name = "Atomic Power Red",
+            CanMove = true,
+            Cooldown = 30,
+            ForwardData = { YVelocity = 0, Duration = math.huge, Update = true, Velocity = 0 },
+            Energy = 0,
+            Damage = NumberRange.new(100000000000, 100000000000)
+        },
+        "RadiumBeam"
+    }
+    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CombatRemote"):FireServer(unpack(args))
+end
+
+-- Player Heal Beam (-293992929 damage = healing)
+local function fireHealBeam()
+    local args = {
+        "GetToken", "CombatFunction", "CreateBeam",
+        {
+            Knockback = { FaceTarget = false, Velocity = 0, YVelocity = 0, Duration = 0.2 },
+            Name = "Atomic Power Red",
+            CanMove = true,
+            Cooldown = 30,
+            ForwardData = { YVelocity = 0, Duration = math.huge, Update = true, Velocity = 0 },
+            Energy = 0,
+            Damage = NumberRange.new(-293992929, -293992929)
+        },
+        "RadiumBeam"
+    }
+    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CombatRemote"):FireServer(unpack(args))
+end
+
+-- Immortal Player (math.huge damage)
+local function fireImmortalBeam()
+    local args = {
+        "GetToken", "CombatFunction", "CreateBeam",
+        {
+            Knockback = { FaceTarget = false, Velocity = 0, YVelocity = 0, Duration = 0.2 },
+            Name = "Atomic Power Red",
+            CanMove = true,
+            Cooldown = 30,
+            ForwardData = { YVelocity = 0, Duration = math.huge, Update = true, Velocity = 0 },
+            Energy = 0,
+            Damage = NumberRange.new(math.huge, math.huge)
+        },
+        "RadiumBeam"
+    }
+    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CombatRemote"):FireServer(unpack(args))
+end
+
+-- Toggle 1: Infinite Beam
+toggle1.MouseButton1Click:Connect(function()
+    infiniteOn = not infiniteOn
+    if infiniteOn then
+        toggle1.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        toggle1.Text = "Infinite Beam (100B) ✓"
+        fireInfiniteBeam()
+    else
+        toggle1.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+        toggle1.Text = "Infinite Beam (100B DMG)"
+        task.wait(0.3)
+        removeBeam()
+    end
+    status.Text = (infiniteOn or healOn or immortalOn) and "Active" or "All OFF"
+end)
+
+-- Toggle 2: Player Heal
+toggle2.MouseButton1Click:Connect(function()
+    healOn = not healOn
+    if healOn then
+        toggle2.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        toggle2.Text = "Player Heal ✓"
+        fireHealBeam()
+    else
+        toggle2.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+        toggle2.Text = "Player Heal (-8838388383832929)"
+        task.wait(0.3)
+        removeBeam()
+    end
+    status.Text = (infiniteOn or healOn or immortalOn) and "Active" or "All OFF"
+end)
+
+-- Toggle 3: Immortal Player
+toggle3.MouseButton1Click:Connect(function()
+    immortalOn = not immortalOn
+    if immortalOn then
+        toggle3.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        toggle3.Text = "Immortal Player ✓"
+        fireImmortalBeam()
+    else
+        toggle3.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+        toggle3.Text = "Immortal Player (Godmode)"
+        task.wait(0.3)
+        removeBeam()
+    end
+    status.Text = (infiniteOn or healOn or immortalOn) and "Active" or "All OFF"
+end)
+
+-- Cleanup
+screenGui.Destroying:Connect(function()
+    if infiniteOn or healOn or immortalOn then
+        removeBeam()
+    end
+end)
+
+print("Atomic Power Red loaded with Player Heal toggle!")status.Position = UDim2.new(0, 0, 0.85, 0)
 status.BackgroundTransparency = 1
 status.Text = "All OFF"
 status.TextColor3 = Color3.fromRGB(180, 180, 180)
