@@ -1,40 +1,177 @@
--- // Atomic Power Red - Triple Toggle (With Player Heal) \\
+-- // Atomic Beam Controller - Modified Versions Only (Draggable) \\
 
 local player = game.Players.LocalPlayer
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "AtomicBeamToggles"
+screenGui.Name = "AtomicController"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 250, 0, 240)
-frame.Position = UDim2.new(0.5, -125, 0.25, 0)
-frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.Size = UDim2.new(0, 260, 0, 230)
+frame.Position = UDim2.new(0.5, -130, 0.25, 0)
+frame.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 frame.Parent = screenGui
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 10)
-corner.Parent = frame
+local uicorner = Instance.new("UICorner")
+uicorner.CornerRadius = UDim.new(0, 12)
+uicorner.Parent = frame
 
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 40)
 title.BackgroundTransparency = 1
-title.Text = "Atomic Power Red"
-title.TextColor3 = Color3.fromRGB(255, 60, 60)
+title.Text = "Atomic Beam"
+title.TextColor3 = Color3.fromRGB(255, 90, 90)
 title.TextScaled = true
 title.Font = Enum.Font.GothamBold
 title.Parent = frame
 
--- Toggle 1: Infinite Beam (100 Billion Damage)
-local toggle1 = Instance.new("TextButton")
-toggle1.Size = UDim2.new(0.9, 0, 0, 38)
-toggle1.Position = UDim2.new(0.05, 0, 0.22, 0)
-toggle1.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-toggle1.Text = "Infinite Beam (100B DMG)"
+-- Toggle 1: Infinite Atomic (100 Billion Damage)
+local btnInfinite = Instance.new("TextButton")
+btnInfinite.Size = UDim2.new(0.88, 0, 0, 38)
+btnInfinite.Position = UDim2.new(0.06, 0, 0.23, 0)
+btnInfinite.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+btnInfinite.Text = "Infinite Atomic (100B DMG)"
+btnInfinite.TextColor3 = Color3.new(1, 1, 1)
+btnInfinite.TextScaled = true
+btnInfinite.Font = Enum.Font.GothamSemibold
+btnInfinite.Parent = frame
+
+local c1 = Instance.new("UICorner") c1.CornerRadius = UDim.new(0, 8) c1.Parent = btnInfinite
+
+-- Toggle 2: Atomic Heal
+local btnHeal = Instance.new("TextButton")
+btnHeal.Size = UDim2.new(0.88, 0, 0, 38)
+btnHeal.Position = UDim2.new(0.06, 0, 0.43, 0)
+btnHeal.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+btnHeal.Text = "Atomic Heal (-293M)"
+btnHeal.TextColor3 = Color3.new(1, 1, 1)
+btnHeal.TextScaled = true
+btnHeal.Font = Enum.Font.GothamSemibold
+btnHeal.Parent = frame
+
+local c2 = Instance.new("UICorner") c2.CornerRadius = UDim.new(0, 8) c2.Parent = btnHeal
+
+-- Toggle 3: Atomic Godmode (Immortal)
+local btnGod = Instance.new("TextButton")
+btnGod.Size = UDim2.new(0.88, 0, 0, 38)
+btnGod.Position = UDim2.new(0.06, 0, 0.63, 0)
+btnGod.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+btnGod.Text = "Atomic Godmode (Immortal)"
+btnGod.TextColor3 = Color3.new(1, 1, 1)
+btnGod.TextScaled = true
+btnGod.Font = Enum.Font.GothamSemibold
+btnGod.Parent = frame
+
+local c3 = Instance.new("UICorner") c3.CornerRadius = UDim.new(0, 8) c3.Parent = btnGod
+
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(1, 0, 0, 28)
+status.Position = UDim2.new(0, 0, 0.85, 0)
+status.BackgroundTransparency = 1
+status.Text = "All OFF"
+status.TextColor3 = Color3.fromRGB(180, 180, 180)
+status.TextScaled = true
+status.Font = Enum.Font.Gotham
+status.Parent = frame
+
+local infiniteOn = false
+local healOn = false
+local godOn = false
+
+local function removeBeam()
+    local args = { "GetToken", "CombatFunction", "RemoveBeam" }
+    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CombatRemote"):FireServer(unpack(args))
+end
+
+-- Unified Fire Function using "Atomic"
+local function fireAtomic(damage, energy)
+    local args = {
+        "GetToken",
+        "CombatFunction",
+        "CreateBeam",
+        {
+            Knockback = {
+                FaceTarget = false,
+                Velocity = 0,
+                YVelocity = 0,
+                Duration = 0.2
+            },
+            Name = "Atomic",                    -- Normal Atomic name
+            CanMove = true,
+            Cooldown = 25,
+            Energy = energy,
+            ForwardData = {
+                YVelocity = 0,
+                Duration = math.huge,
+                Update = true,
+                Velocity = 0
+            },
+            Damage = NumberRange.new(damage, damage)
+        }
+    }
+    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CombatRemote"):FireServer(unpack(args))
+end
+
+-- Toggle 1: Infinite (100 Billion)
+btnInfinite.MouseButton1Click:Connect(function()
+    infiniteOn = not infiniteOn
+    if infiniteOn then
+        btnInfinite.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        btnInfinite.Text = "Infinite Atomic (100B) ✓"
+        fireAtomic(100000000000, 0)
+    else
+        btnInfinite.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+        btnInfinite.Text = "Infinite Atomic (100B DMG)"
+        task.wait(0.25)
+        removeBeam()
+    end
+    status.Text = (infiniteOn or healOn or godOn) and "Active" or "All OFF"
+end)
+
+-- Toggle 2: Heal
+btnHeal.MouseButton1Click:Connect(function()
+    healOn = not healOn
+    if healOn then
+        btnHeal.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        btnHeal.Text = "Atomic Heal ✓"
+        fireAtomic(-293992929, 0)
+    else
+        btnHeal.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+        btnHeal.Text = "Atomic Heal (-293M)"
+        task.wait(0.25)
+        removeBeam()
+    end
+    status.Text = (infiniteOn or healOn or godOn) and "Active" or "All OFF"
+end)
+
+-- Toggle 3: Godmode
+btnGod.MouseButton1Click:Connect(function()
+    godOn = not godOn
+    if godOn then
+        btnGod.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        btnGod.Text = "Atomic Godmode ✓"
+        fireAtomic(math.huge, 0)
+    else
+        btnGod.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+        btnGod.Text = "Atomic Godmode (Immortal)"
+        task.wait(0.25)
+        removeBeam()
+    end
+    status.Text = (infiniteOn or healOn or godOn) and "Active" or "All OFF"
+end)
+
+-- Cleanup when GUI is closed
+screenGui.Destroying:Connect(function()
+    if infiniteOn or healOn or godOn then
+        removeBeam()
+    end
+end)
+
+print("Atomic Beam Controller loaded (Normal Atomic base + modifications)")toggle1.Text = "Infinite Beam (100B DMG)"
 toggle1.TextColor3 = Color3.new(1,1,1)
 toggle1.TextScaled = true
 toggle1.Font = Enum.Font.GothamSemibold
